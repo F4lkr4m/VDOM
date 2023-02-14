@@ -1,9 +1,13 @@
-export const createVNode = (tagName, props = {}, children = []) => {
+export const createVNode = (tagName, props = {}, ...children) => {
+
+  if (typeof tagName === "function") {
+    return tagName(props, children);
+  }
 
   return {
     tagName,
     props,
-    children
+    children: children.flat()
   }
 };
 
@@ -22,11 +26,9 @@ export const createDOMNode = (vnode) => {
 
       createdDOMNode = document.createElement(tagName);
   
-      Object.entries(props).forEach(([key, value]) => {
-        patchProp(createdDOMNode, key, value);
-      });
+      patchProps(createdDOMNode, {}, curVNode.props);
 
-      children.forEach((childVNode) => {
+      children?.forEach((childVNode) => {
         stack.push({ curVNode: childVNode, parent: createdDOMNode });
       });
     }
@@ -70,7 +72,7 @@ export const patchNode = (node, vNode, nextVNode) => {
     return newNode;
   }
 
-  patchProps(node, vNode, nextVNode);
+  patchProps(node, vNode.props, nextVNode.props);
   patchChildren(node, vNode.children, nextVNode.children);
 
   return node;
@@ -102,18 +104,9 @@ const patchProp = (node, key, nextProp) => {
   node.setAttribute(key, nextProp)
 }
 
-const patchProps = (node, vNode, nextVNode) => {
-  const { props } = vNode;
-  const { props: nextProps } = nextVNode;
-  if (!nextProps) {
-    Object.entries(props).forEach(([key, value]) => {
-      patchProp(node, key, null);
-    });
-    return;
-  } 
-
+const patchProps = (node, props = {}, nextProps = {}) => {
   const mergedProps = { ...props, ...nextProps };
-  
+  console.log(mergedProps);
   Object.entries(mergedProps).forEach(([key, value]) => {
     if (props[key] !== nextProps[key]) {
       patchProp(node, key, nextProps[key]);
@@ -127,7 +120,7 @@ const patchChildren = (node, vChildren, vNextChildren) => {
   });
 
 
-  vNextChildren.slice(vChildren.length).forEach((child) => {
+  vNextChildren?.slice(vChildren.length).forEach((child) => {
     node.appendChild(createDOMNode(child));
   })
 }

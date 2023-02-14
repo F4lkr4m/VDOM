@@ -13,6 +13,14 @@ const onClick = () => {
 const createVApp = (state) => {
   const { counter } = state;
 
+  return (
+    <div {...{ class: "container", "data-count": String(counter) }}>
+      <button {...{ class: "button", onclick: onClick }} >
+        Какая-то кнопка {String(counter)}
+      </button>
+    </div>
+  )
+
   const testNode = createVNode(
     'div',
     { id: 'root' },
