@@ -23,7 +23,7 @@ export const createDOMNode = (vnode) => {
       createdDOMNode = document.createElement(tagName);
   
       Object.entries(props).forEach(([key, value]) => {
-        createdDOMNode.setAttribute(key, value);
+        patchProp(createdDOMNode, key, value);
       });
 
       children.forEach((childVNode) => {
@@ -76,14 +76,22 @@ export const patchNode = (node, vNode, nextVNode) => {
   return node;
 }
 
+function listener(event) {
+  return this[event.type]();
+}
+
 const patchProp = (node, key, nextProp) => {
   if (key.startsWith('on')) {
     const eventName = key.slice(2);
-    const curEvent = node[eventName];
+    node[eventName] = nextProp;
 
     if (!nextProp) {
-      node.removeEventListener(key, curEvent);
+      node.removeEventListener(eventName, listener);
     }
+    if (nextProp) {
+      node.addEventListener(eventName, listener)
+    }
+    return;
   }
 
   if (!nextProp) {
@@ -114,7 +122,6 @@ const patchProps = (node, vNode, nextVNode) => {
 }
 
 const patchChildren = (node, vChildren, vNextChildren) => {
-  console.log(node.childNodes);
   node.childNodes.forEach((child, index) => {
     patchNode(child, vChildren[index], vNextChildren[index]);
   });

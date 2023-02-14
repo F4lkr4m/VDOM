@@ -6,6 +6,10 @@ let state = {
   counter: 0,
 };
 
+const onClick = () => {
+  console.log('clicked');
+}
+
 const createVApp = (state) => {
   const { counter } = state;
 
@@ -22,7 +26,8 @@ const createVApp = (state) => {
           'text4',
         ]),
         createVNode('div', {}, ['kek']),
-      ])
+      ]),
+      createVNode('button', { onclick: onClick }, ['Какая-то кнопка']),
     ]
   );
 
