@@ -1,7 +1,7 @@
 'use strict'
 //"build": "babel index.js --out-dir dist && cp vdom.js dist/vdom.js"
 
-import { createVNode, patchNode, createDOMNode, patch } from './vdom.js';
+import { createVNode, patchNode, createDOMNode, patch } from '@';
 
 let state = {
   counter: 0,
