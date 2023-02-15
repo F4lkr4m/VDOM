@@ -5,10 +5,17 @@ import { createVNode, patchNode, createDOMNode, patch } from '@';
 
 let state = {
   counter: 0,
+  onChange: () => {}
 };
 
-const onClick = () => {
-  console.log('clicked');
+const increase = () => {
+  state.counter += 1;
+  state.onChange && state.onChange();
+}
+
+const decrease = () => {
+  state.counter -= 1;
+  state.onChange && state.onChange();
 }
 
 const createVApp = (state) => {
@@ -16,9 +23,22 @@ const createVApp = (state) => {
 
   return (
     <div {...{ class: "container", "data-count": String(counter) }}>
-      <button {...{ class: "button", onclick: onClick }} >
-        Какая-то кнопка {String(counter)}
+      <button {...{ class: "button", onclick: increase }} >
+        +1
       </button>
+      <button {...{ class: "button", onclick: decrease }} >
+        -1
+      </button>
+      <div>
+        Счетчик: {String(counter)}
+        Контейнер
+        <ul>
+          Самый классный список:
+          <li>1. Котики</li>
+          <li>2. Собаки</li>
+          <li>3. Ежики</li>
+        </ul>
+      </div>
     </div>
   )
 
@@ -48,7 +68,6 @@ let root = document.getElementById("root");
 let vApp = createVApp(state);
 let app = patch(root, vApp);
 
-setInterval(() => {
-  state.counter += 1;
+state.onChange = () => {
   app = patch(app, createVApp(state));
-}, 1000);
+}

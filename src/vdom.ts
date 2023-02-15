@@ -1,8 +1,23 @@
-export const createVNode = (tagName, props = {}, ...children) => {
 
-  if (typeof tagName === "function") {
-    return tagName(props, children);
-  }
+interface ElementWithVState extends Element {
+  vnode: VNode;
+}
+
+interface VNodeAttributes {
+  onclick?: (event: Event) => void;
+  class?: string;
+  id?: string;
+
+}
+
+interface VNode {
+  tagName: string;
+  props: object;
+  children: VNode[];
+};
+
+
+export const createVNode = (tagName: string, props: VNodeAttributes = {}, ...children: VNode[]): VNode => {
 
   return {
     tagName,
@@ -11,7 +26,7 @@ export const createVNode = (tagName, props = {}, ...children) => {
   }
 };
 
-export const createDOMNode = (vnode) => {  
+export const createDOMNode = (vnode: VNode): ElementWithVState => {  
   let root = null;
   const stack = [{ curVNode: vnode, parent: null }];
 
@@ -45,12 +60,12 @@ export const createDOMNode = (vnode) => {
   return root;
 };
 
-export const mount = (node, target) => {
+export const mount = (node: ElementWithVState, target: ElementWithVState): ElementWithVState => {
   target.replaceWith(node);
   return node;
 }
 
-export const patchNode = (node, vNode, nextVNode) => {
+export const patchNode = (node: ElementWithVState, vNode: VNode, nextVNode: VNode): ElementWithVState => {
   if (!nextVNode) {
     node.remove();
     return;
@@ -78,11 +93,11 @@ export const patchNode = (node, vNode, nextVNode) => {
   return node;
 }
 
-function listener(event) {
+function listener(event: Event) {
   return this[event.type]();
 }
 
-const patchProp = (node, key, nextProp) => {
+const patchProp = (node: ElementWithVState, key, nextProp) => {
   if (key.startsWith('on')) {
     const eventName = key.slice(2);
     node[eventName] = nextProp;
@@ -104,28 +119,27 @@ const patchProp = (node, key, nextProp) => {
   node.setAttribute(key, nextProp)
 }
 
-const patchProps = (node, props = {}, nextProps = {}) => {
+const patchProps = (node: ElementWithVState, props: VNodeAttributes = {}, nextProps: VNodeAttributes = {}): void => {
   const mergedProps = { ...props, ...nextProps };
-  console.log(mergedProps);
-  Object.entries(mergedProps).forEach(([key, value]) => {
+  Object.entries(mergedProps).forEach(([key,]) => {
     if (props[key] !== nextProps[key]) {
       patchProp(node, key, nextProps[key]);
     }
   });
 }
 
-const patchChildren = (node, vChildren, vNextChildren) => {
-  node.childNodes.forEach((child, index) => {
+const patchChildren = (node: ElementWithVState, vChildren: VNode[], vNextChildren: VNode[]): void => {
+  (node.childNodes as NodeListOf<ElementWithVState>).forEach((child: ElementWithVState, index: number) => {
     patchNode(child, vChildren[index], vNextChildren[index]);
   });
 
 
-  vNextChildren?.slice(vChildren.length).forEach((child) => {
+  vNextChildren?.slice(vChildren.length).forEach((child: VNode) => {
     node.appendChild(createDOMNode(child));
   })
 }
 
-export const patch = (node, nextVApp) => {
+export const patch = (node: ElementWithVState, nextVApp: VNode): ElementWithVState => {
   const { vnode } = node;
   node = patchNode(node, vnode, nextVApp);
   node.vnode = nextVApp;
